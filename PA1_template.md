@@ -1,70 +1,371 @@
 # Reproducible Research: Peer Assessment 1
 
+## Title
 
-## Loading and preprocessing the data
+## Synopsis
+
+
+## Data Processing
+The dataset is a CSV file that is compressed to a zip file stored in the working directory.  It contains data submitted by an anonymous invidual recording the number of steps taken using an activity monitoring device like Fitbit.  We'll load the data with read.csv() and use unz() to access the zip file without uncompressing it.  To make grouping and summarizing easier, we'll configure dplyr.
 
 ```r
-# load  # use dplyr # activity
-# activityByDay, totalStepsByDay - group by day and compute totals
-# activityByInterval, meansByInterval - group by interval and compute means
-# totalsByInterval do I need this?
-# missingSteps, add1, add2, add3, add4, add5, add6, add7, add8
-# completeActivity  - make new dataset with missing values filled in
-# completeActivityByDay, totalStepsByDayCompleteActivity - group new dataset with missing values filled in by day and compute totals
-# create dayType factor variable on new dataset with missing values filled in
-# completeActivityByIntervalByDayType, meansByIntervalByDayTypeCompleteActivity - group new dataset with missing values filled in by interval and day type and compute means
-
-# - [1] "activity"                                 "activityByDay"                           
-# - [3] "activityByInterval"                       "completeActivity"                        
-# - [5] "completeActivityByDay"                    "completeActivityByIntervalByDayType"     
-# - [7] "makeDayTypeFactor"                        "meansByInterval"                         
-# - [9] "meansByIntervalByDayTypeCompleteActivity" "missingSteps"                            
-# - [11] "totalsByInterval"                         "totalStepsByDay"                         
-# - [13] "totalStepsByDayCompleteActivity" 
+mydf <- read.csv(unz("activity.zip","activity.csv"),header=TRUE,sep=",")
+library(dplyr)
+activity <- tbl_df(mydf)
+rm("mydf")
 ```
 
+Explore the size of the activity data frame and the first few rows.
+The dataset date range is October 2012 to November 2012, a total of 61 days.  Every 5 minutes, the number of steps were recorded and indexed using 5 minute intervals named 0 to 55, 100 to 155, 200 to 255, etc., and 2300 to 2355.  Essentially the hours are named using the 24-hour clock and each interval is a multiple of five from 5 to 55.  There are a total of 288 five minute intervals a day.
+
+```r
+dim(activity)
+```
+
+```
+## [1] 17568     3
+```
+
+```r
+head(activity)
+```
+
+```
+## Source: local data frame [6 x 3]
+## 
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
+range(as.character(activity$date))
+```
+
+```
+## [1] "2012-10-01" "2012-11-30"
+```
+
+```r
+as.Date("2012-12-01")-as.Date("2012-10-01")
+```
+
+```
+## Time difference of 61 days
+```
+
+```r
+unique(activity$interval)
+```
+
+```
+##   [1]    0    5   10   15   20   25   30   35   40   45   50   55  100  105
+##  [15]  110  115  120  125  130  135  140  145  150  155  200  205  210  215
+##  [29]  220  225  230  235  240  245  250  255  300  305  310  315  320  325
+##  [43]  330  335  340  345  350  355  400  405  410  415  420  425  430  435
+##  [57]  440  445  450  455  500  505  510  515  520  525  530  535  540  545
+##  [71]  550  555  600  605  610  615  620  625  630  635  640  645  650  655
+##  [85]  700  705  710  715  720  725  730  735  740  745  750  755  800  805
+##  [99]  810  815  820  825  830  835  840  845  850  855  900  905  910  915
+## [113]  920  925  930  935  940  945  950  955 1000 1005 1010 1015 1020 1025
+## [127] 1030 1035 1040 1045 1050 1055 1100 1105 1110 1115 1120 1125 1130 1135
+## [141] 1140 1145 1150 1155 1200 1205 1210 1215 1220 1225 1230 1235 1240 1245
+## [155] 1250 1255 1300 1305 1310 1315 1320 1325 1330 1335 1340 1345 1350 1355
+## [169] 1400 1405 1410 1415 1420 1425 1430 1435 1440 1445 1450 1455 1500 1505
+## [183] 1510 1515 1520 1525 1530 1535 1540 1545 1550 1555 1600 1605 1610 1615
+## [197] 1620 1625 1630 1635 1640 1645 1650 1655 1700 1705 1710 1715 1720 1725
+## [211] 1730 1735 1740 1745 1750 1755 1800 1805 1810 1815 1820 1825 1830 1835
+## [225] 1840 1845 1850 1855 1900 1905 1910 1915 1920 1925 1930 1935 1940 1945
+## [239] 1950 1955 2000 2005 2010 2015 2020 2025 2030 2035 2040 2045 2050 2055
+## [253] 2100 2105 2110 2115 2120 2125 2130 2135 2140 2145 2150 2155 2200 2205
+## [267] 2210 2215 2220 2225 2230 2235 2240 2245 2250 2255 2300 2305 2310 2315
+## [281] 2320 2325 2330 2335 2340 2345 2350 2355
+```
 
 ## What is mean total number of steps taken per day?
+Ignore missing values and use dplyr group_by and summarize, to compute the total number of steps taken per day and save in new R object, totalStepsByDay. We'll make the variable names more descriptive and make a histogram of the total number of steps taken each day.  Finally, we calculate and report the mean and median of the total number of steps taken per day using the R function summary() and compare to the median() and mean() functions.
 
 ```r
-# For this part of the assignment, you can ignore the missing values in the dataset.
-# Calculate the total number of steps taken per day
-# If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
-# Calculate and report the mean and median of the total number of steps taken per day
+totalStepsByDay <- summarize(group_by(activity, date), sum(steps,na.rm=TRUE))
+names(totalStepsByDay) <-c("date","total")
+
+hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
+rug(totalStepsByDay$total)
 ```
 
+![](PA1_template_files/figure-html/totalStepsByDay-1.png) 
+
+```r
+options(digits=8)
+summary(totalStepsByDay$total)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     0.0  6778.0 10395.0  9354.2 12811.0 21194.0
+```
+
+```r
+median(totalStepsByDay$total)
+```
+
+```
+## [1] 10395
+```
+
+```r
+mean(totalStepsByDay$total)
+```
+
+```
+## [1] 9354.2295
+```
 
 ## What is the average daily activity pattern?
+Using dplyr summarize and group_by, we compute the means of steps for each 5-minute interval and ignore missing values.
+We'll plot the mean steps taken by 5-minute interval across all days.
+The R summary function tells us the maximum mean number of steps which we can plug in to the subset function and find the 5-minute interval with this value.
+The interval 835 contains the maximum mean number of steps.
 
 ```r
-# Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-# Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+meansByInterval <- summarize(group_by(activity,interval),mean(steps,na.rm=TRUE))
+names(meansByInterval) <-c("interval","means")
+
+with(meansByInterval,plot(interval,means,type="l", main="Average number of steps taken"))
 ```
 
+![](PA1_template_files/figure-html/meanStepsByInterval-1.png) 
 
+```r
+summary(meansByInterval$means)
+```
+
+```
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##   0.0000   2.4858  34.1130  37.3830  52.8350 206.1700
+```
+
+```r
+subset(meansByInterval,means>206)
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##   interval     means
+## 1      835 206.16981
+```
 
 ## Imputing missing values
+Values are only missing in the steps variable and the logical vector, missingSteps helps identify the days when used with the unique() function.  The 8 days with missing values are 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 2012-11-14 2012-11-30.
+The function nrow computes the total number of missing values in the dataset when we subset using the missingSteps logical vector.
+Since we already have the means by interval for the entire dataset in the meansByInterval R object, my strategy to fill in the missing values is to set the missing value for each interval to the mean for each interval for each of the eight days.
+First, create a new dataset called completeActivity by subsetting activity and selecting rows with dates not equal to 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 2012-11-14 2012-11-30.  This gives us the rows with values for steps.
+Then we create temporary R objects for each day with missing values and set the missing values for each interval to the mean for each interval, thus applying our strategy.
+We merge each day with imputed values into the new dataset completeActivity and check for missing values in the new dataset and find none.
+We do some housekeeping by clearing the temporary R objects, add1 to add8.
+To create out dataset for the plot, we use dplyr group_by and summarize to compute total number of steps taken per day using the completeActivity dataset that contains imputed missing values and save in new R object totalStepsByDayCompleteActivity.
+We make the totalStepsByDayCompleteActivity variables more descriptive and make a histogram of the total number of steps taken each day.
+We calculate and report the mean and median total number of steps taken per day and the histograms and summaries to the original dataset.
 
 ```r
-# Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
-# 
-# Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-# 
-# Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-# 
-# Create a new dataset that is equal to the original dataset but with the missing data filled in.
-# 
-# Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+sum(is.na(activity$date)) # 0 rows
 ```
 
+```
+## [1] 0
+```
 
+```r
+sum(is.na(activity$interval)) # 0 rows
+```
+
+```
+## [1] 0
+```
+
+```r
+missingSteps <- is.na(activity$steps)
+unique(activity[missingSteps,2]) 
+```
+
+```
+## Source: local data frame [8 x 1]
+## 
+##         date
+## 1 2012-10-01
+## 2 2012-10-08
+## 3 2012-11-01
+## 4 2012-11-04
+## 5 2012-11-09
+## 6 2012-11-10
+## 7 2012-11-14
+## 8 2012-11-30
+```
+
+```r
+nrow(activity[missingSteps,]) # 2,304 rows
+```
+
+```
+## [1] 2304
+```
+
+```r
+completeActivity <- subset(activity,!(date %in% c("2012-10-01","2012-10-08","2012-11-01","2012-11-04","2012-11-09","2012-11-10","2012-11-14","2012-11-30")))
+
+add1 <- data.frame(steps=meansByInterval$means,date="2012-10-01",interval=meansByInterval$interval)
+add2 <- data.frame(steps=meansByInterval$means,date="2012-10-08",interval=meansByInterval$interval)
+add3 <- data.frame(steps=meansByInterval$means,date="2012-11-01",interval=meansByInterval$interval)
+add4 <- data.frame(steps=meansByInterval$means,date="2012-11-04",interval=meansByInterval$interval)
+add5 <- data.frame(steps=meansByInterval$means,date="2012-11-09",interval=meansByInterval$interval)
+add6 <- data.frame(steps=meansByInterval$means,date="2012-11-10",interval=meansByInterval$interval)
+add7 <- data.frame(steps=meansByInterval$means,date="2012-11-14",interval=meansByInterval$interval)
+add8 <- data.frame(steps=meansByInterval$means,date="2012-11-30",interval=meansByInterval$interval)
+
+completeActivity <- rbind(completeActivity,add1)
+completeActivity <- rbind(completeActivity,add2)
+completeActivity <- rbind(completeActivity,add3)
+completeActivity <- rbind(completeActivity,add4)
+completeActivity <- rbind(completeActivity,add5)
+completeActivity <- rbind(completeActivity,add6)
+completeActivity <- rbind(completeActivity,add7)
+completeActivity <- rbind(completeActivity,add8)
+
+sum(is.na(completeActivity$steps)) # 0 rows
+```
+
+```
+## [1] 0
+```
+
+```r
+rm("add1");rm("add2");rm("add3");rm("add4");rm("add5");rm("add6");rm("add7");rm("add8");
+
+totalStepsByDayCompleteActivity <- summarize(group_by(completeActivity, date), sum(steps,na.rm=TRUE))
+names(totalStepsByDayCompleteActivity) <-c("date","totals")
+
+par(mfrow = c(1,2))
+hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
+rug(totalStepsByDay$total)
+hist(totalStepsByDayCompleteActivity$totals, col="rosybrown", main="Total Steps per Day using Imputed Missing Values", breaks=5)
+rug(totalStepsByDayCompleteActivity$totals) # rug shows each data point in your data set
+```
+
+![](PA1_template_files/figure-html/imputeMissingValues-1.png) 
+
+```r
+options(digits=8)
+summary(totalStepsByDayCompleteActivity$totals)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    9819   10766   10766   12811   21194
+```
+
+```r
+mean(totalStepsByDayCompleteActivity$totals) 
+```
+
+```
+## [1] 10766.189
+```
+
+```r
+median(totalStepsByDayCompleteActivity$totals) 
+```
+
+```
+## [1] 10766.189
+```
+
+```r
+options(digits=8)
+summary(totalStepsByDay$total)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     0.0  6778.0 10395.0  9354.2 12811.0 21194.0
+```
+
+```r
+median(totalStepsByDay$total)
+```
+
+```
+## [1] 10395
+```
+
+```r
+mean(totalStepsByDay$total)
+```
+
+```
+## [1] 9354.2295
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+We need a custom function makeDayTypeFactor that takes a vector of dates and returns a vector of factor variables with the levels weekday and weekend, using the weekdays() function.  This can be used to create a new dayType variable in the completeActivity dataset that has imputed missing values.
+With the new factor variables, we use dplyr group_by and summarize to compute mean number of steps taken, by interval and day type and save in the new R object meansByIntervalByDayTypeCompleteActivity.
+We make the variable names of meansByIntervalByDayTypeCompleteActivity more descriptive.
+Finally, make a panel plot containing a time series plot of the 5-minute interval and the average number of steps taken, averaged across all weekday days or weekend days.
 
 ```r
-# For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
-# 
-# Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-# 
-# Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+makeDayTypeFactor <- function(v) {
+    results <- vector()
+    for (s in v) {
+        if (weekdays(strptime(s,"%Y-%m-%d")) %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")) {
+            results <- c(results,"weekday")
+        } else {
+            results <- c(results,"weekend")
+        }        
+    }
+    as.factor(results)
+}
+
+completeActivity$dayType <- makeDayTypeFactor(completeActivity$date)
+
+meansByIntervalByDayTypeCompleteActivity <- summarize(group_by(completeActivity, interval, dayType), mean(steps))
+
+names(meansByIntervalByDayTypeCompleteActivity) <-c("interval","dayType", "means")
+
+library(lattice)
+xyplot(means ~ interval | dayType, type="l", data=meansByIntervalByDayTypeCompleteActivity, layout = c(1,2))
 ```
+
+![](PA1_template_files/figure-html/patternsByDayType-1.png) 
+
+
+## Results
+### What is mean total number of steps taken per day?
+The mean total number of steps taken per day is 9,354 with a median of 10,395.  The 1st Quartile is 6,778, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 10,000 to 15,000.  There are more data values in the range 0 to 10,000, than in the range 15,000 to 25,000.
+
+### What is the average daily activity pattern?
+The largest mean number of steps taken within a day's 5-minute interval is 206.17 in the 835 interval or at 8:35 am.  From intervals 0 to 500, the average number of steps is usually 0.  From time intervals 500 to about 900, the average number of steps increase from 0 to about 200.  There seems to be a pattern for the average number of steps for the intervals 1000 to 2000.  The average moves from around 50 to 100 and back to 50, during the ranges, 1000 to 1500, 1500 to 1750, and 1750 to 2000.  From intervals 2000 to 2355, the average moves gradually from 50 to 0.
+
+### Do these values differ from the estimates from the first part of the assignment?
+This table compares the summaries of the original dataset and the dataset with imputed missing values.
+ORIGINAL
+    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+     0.0  6778.0 10395.0  9354.2 12811.0 21194.0
+AFTER IMPUTING MISSING VALUES
+    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      41    9819   10766   10766   12811   21194
+
+In the original dataset, the mean total number of steps taken per day is 9,354 with a median of 10,395.  The 1st Quartile is 6,778, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 10,000 to 15,000.  There are more data values in the range 0 to 10,000, than in the range 15,000 to 25,000.
+
+After imputing missing values, the mean total number of steps taken per day is 10,766 with a median of 10,766.  The 1st Quartile is 9,819, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 7,500 to 15,000.  There are less data values in the ranges 0 to 5,000, and the range 20,000 to 25,000.
+
+### What is the impact of imputing missing data on the estimates of the total daily number of steps?
+After imputing missing values, and repeating the same analysis of the total number of steps per day, the new dataset distribution looks more Gaussian or normal.  When we compare the two histograms, the new plot contains more data about the mean.
+
+### Are there differences in activity patterns between weekdays and weekends?
+Yes, on weekends, the average steps taken per day goes to 50 later in the day than on the weekdays; about 750 compared to about 550.
+Also, the pattern of the average in the intervals 1000 to 2000 is different on weekends.  The average moved to a high of about 150 on weekends, compared to 100 on weekdays.  There was also a couple of patterns visible during the weekends where the average moved from 50 to 100 and back to 50; the average also moved from 50 to 150 and back to 50.
+During weekends and weekdays, the aveage steps moved from 50 to 0 in the intervals 2000 to 2300.
