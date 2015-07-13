@@ -1,27 +1,32 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r loadAndCleanData, echo=TRUE}
+
+```r
 # load  # use dplyr # activity
-# totalStepsByDay - group by day and compute totals
-# meansByInterval - group by interval and compute means
+# activityByDay, totalStepsByDay - group by day and compute totals
+# activityByInterval, meansByInterval - group by interval and compute means
 # totalsByInterval do I need this?
 # missingSteps, add1, add2, add3, add4, add5, add6, add7, add8
 # completeActivity  - make new dataset with missing values filled in
-# totalStepsByDayCompleteActivity - group new dataset with missing values filled in by day and compute totals
+# completeActivityByDay, totalStepsByDayCompleteActivity - group new dataset with missing values filled in by day and compute totals
 # create dayType factor variable on new dataset with missing values filled in
-# meansByIntervalByDayTypeCompleteActivity - group new dataset with missing values filled in by interval and day type and compute means
+# completeActivityByIntervalByDayType, meansByIntervalByDayTypeCompleteActivity - group new dataset with missing values filled in by interval and day type and compute means
+
+# - [1] "activity"                                 "activityByDay"                           
+# - [3] "activityByInterval"                       "completeActivity"                        
+# - [5] "completeActivityByDay"                    "completeActivityByIntervalByDayType"     
+# - [7] "makeDayTypeFactor"                        "meansByInterval"                         
+# - [9] "meansByIntervalByDayTypeCompleteActivity" "missingSteps"                            
+# - [11] "totalsByInterval"                         "totalStepsByDay"                         
+# - [13] "totalStepsByDayCompleteActivity" 
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{r totalStepsByDay, echo=TRUE}
+
+```r
 # For this part of the assignment, you can ignore the missing values in the dataset.
 # Calculate the total number of steps taken per day
 # If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
@@ -30,7 +35,8 @@ output:
 
 
 ## What is the average daily activity pattern?
-```{r meanStepsByInterval, echo=TRUE}
+
+```r
 # Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 # Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 ```
@@ -38,7 +44,8 @@ output:
 
 
 ## Imputing missing values
-```{r imputeMissingValues, echo=TRUE}
+
+```r
 # Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 # 
 # Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
@@ -53,7 +60,8 @@ output:
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r patternsByDayType, echo=TRUE}
+
+```r
 # For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 # 
 # Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
