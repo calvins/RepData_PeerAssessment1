@@ -1,10 +1,10 @@
 # Reproducible Research: Peer Assessment 1
 
 
-## Title
+## A Taste of the Quantified Self - Insights into an Individual's Personal Activity Data Over Two Months
 
 ## Synopsis
-
+This report will describe some findings uncovered in the activity tracking data of an anonymous individual in 2012.  It is expected that patterns in the number of steps taken daily should match those of an individual's everyday activities like, rest, travel, work, exercise, or leisure.  The data will be summarized by day and by weekday or weekend.  Totals and averages will be calculated in several groupings such as daily, by 5-minute interval in a day, and by day type; weekday or weekend.  Histograms, five number summaries, time series plots, and multiple panel plots will help us drill down to the patterns' details.  We found that the distribution of the total number of steps taken per day looks Gaussian, or Normally distributed and is confirmed after we impute missing values in the dataset and replot the data.  The greatest average number of steps taken occurred around 8:35am, suggesting an individual's commute to a typical work location or exercise routine.  Other patterns in the time series plot suggests a decrease in the average number of steps taken during standard business hours, and no steps taken during typical rest periods (before 5am and after 10pm).  Lastly, the patterns in the time series plot of average steps taken per 5-minute interval show more activity during weekends suggesting the individual is enjoying their leisure time outside and is not at work, sitting at a desk.
 
 ## Data Processing
 The dataset is a CSV file that is compressed to a zip file stored in the working directory.  It contains data submitted by an anonymous invidual recording the number of steps taken using an activity monitoring device like Fitbit.  We'll load the data with read.csv() and use unz() to access the zip file without uncompressing it.  To make grouping and summarizing easier, we'll configure dplyr.
