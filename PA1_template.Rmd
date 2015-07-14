@@ -4,6 +4,10 @@ output:
   html_document:
     keep_md: true
 ---
+```{r setoptions,echo=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "figure/")
+```
 
 ## Title
 
@@ -35,13 +39,15 @@ Ignore missing values and use dplyr group_by and summarize, to compute the total
 totalStepsByDay <- summarize(group_by(activity, date), sum(steps,na.rm=TRUE))
 names(totalStepsByDay) <-c("date","total")
 
-hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
-rug(totalStepsByDay$total)
-
 options(digits=8)
 summary(totalStepsByDay$total)
 median(totalStepsByDay$total)
 mean(totalStepsByDay$total)
+```
+
+```{r plot1, echo=TRUE}
+hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
+rug(totalStepsByDay$total)
 ```
 
 ## What is the average daily activity pattern?
@@ -53,11 +59,13 @@ The interval 835 contains the maximum mean number of steps.
 meansByInterval <- summarize(group_by(activity,interval),mean(steps,na.rm=TRUE))
 names(meansByInterval) <-c("interval","means")
 
-with(meansByInterval,plot(interval,means,type="l", main="Average number of steps taken"))
-
 summary(meansByInterval$means)
 
 subset(meansByInterval,means>206)
+```
+
+```{r plot2, echo=TRUE}
+with(meansByInterval,plot(interval,means,type="l", main="Average number of steps taken"))
 ```
 
 ## Imputing missing values
@@ -105,12 +113,6 @@ rm("add1");rm("add2");rm("add3");rm("add4");rm("add5");rm("add6");rm("add7");rm(
 totalStepsByDayCompleteActivity <- summarize(group_by(completeActivity, date), sum(steps,na.rm=TRUE))
 names(totalStepsByDayCompleteActivity) <-c("date","totals")
 
-par(mfrow = c(1,2))
-hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
-rug(totalStepsByDay$total)
-hist(totalStepsByDayCompleteActivity$totals, col="rosybrown", main="Total Steps per Day using Imputed Missing Values", breaks=5)
-rug(totalStepsByDayCompleteActivity$totals) # rug shows each data point in your data set
-
 options(digits=8)
 summary(totalStepsByDayCompleteActivity$totals)
 mean(totalStepsByDayCompleteActivity$totals) 
@@ -120,6 +122,14 @@ options(digits=8)
 summary(totalStepsByDay$total)
 median(totalStepsByDay$total)
 mean(totalStepsByDay$total)
+```
+
+```{r plot3, echo=TRUE, fig.height=8}
+par(mfrow = c(2,1))
+hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
+rug(totalStepsByDay$total)
+hist(totalStepsByDayCompleteActivity$totals, col="rosybrown", main="Histogram -Total Steps per Day using Imputed Missing Values", breaks=5)
+rug(totalStepsByDayCompleteActivity$totals) # rug shows each data point in your data set
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -145,11 +155,12 @@ completeActivity$dayType <- makeDayTypeFactor(completeActivity$date)
 meansByIntervalByDayTypeCompleteActivity <- summarize(group_by(completeActivity, interval, dayType), mean(steps))
 
 names(meansByIntervalByDayTypeCompleteActivity) <-c("interval","dayType", "means")
+```
 
+```{r plot4, echo=TRUE}
 library(lattice)
 xyplot(means ~ interval | dayType, type="l", data=meansByIntervalByDayTypeCompleteActivity, layout = c(1,2))
 ```
-
 
 ## Results
 ### What is mean total number of steps taken per day?

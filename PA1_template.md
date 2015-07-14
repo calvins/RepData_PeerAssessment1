@@ -1,5 +1,6 @@
 # Reproducible Research: Peer Assessment 1
 
+
 ## Title
 
 ## Synopsis
@@ -93,13 +94,6 @@ Ignore missing values and use dplyr group_by and summarize, to compute the total
 totalStepsByDay <- summarize(group_by(activity, date), sum(steps,na.rm=TRUE))
 names(totalStepsByDay) <-c("date","total")
 
-hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
-rug(totalStepsByDay$total)
-```
-
-![](PA1_template_files/figure-html/totalStepsByDay-1.png) 
-
-```r
 options(digits=8)
 summary(totalStepsByDay$total)
 ```
@@ -125,6 +119,14 @@ mean(totalStepsByDay$total)
 ## [1] 9354.2295
 ```
 
+
+```r
+hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
+rug(totalStepsByDay$total)
+```
+
+![](figure/plot1-1.png) 
+
 ## What is the average daily activity pattern?
 Using dplyr summarize and group_by, we compute the means of steps for each 5-minute interval and ignore missing values.
 We'll plot the mean steps taken by 5-minute interval across all days.
@@ -135,12 +137,6 @@ The interval 835 contains the maximum mean number of steps.
 meansByInterval <- summarize(group_by(activity,interval),mean(steps,na.rm=TRUE))
 names(meansByInterval) <-c("interval","means")
 
-with(meansByInterval,plot(interval,means,type="l", main="Average number of steps taken"))
-```
-
-![](PA1_template_files/figure-html/meanStepsByInterval-1.png) 
-
-```r
 summary(meansByInterval$means)
 ```
 
@@ -159,6 +155,13 @@ subset(meansByInterval,means>206)
 ##   interval     means
 ## 1      835 206.16981
 ```
+
+
+```r
+with(meansByInterval,plot(interval,means,type="l", main="Average number of steps taken"))
+```
+
+![](figure/plot2-1.png) 
 
 ## Imputing missing values
 Values are only missing in the steps variable and the logical vector, missingSteps helps identify the days when used with the unique() function.  The 8 days with missing values are 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 2012-11-14 2012-11-30.
@@ -249,16 +252,6 @@ rm("add1");rm("add2");rm("add3");rm("add4");rm("add5");rm("add6");rm("add7");rm(
 totalStepsByDayCompleteActivity <- summarize(group_by(completeActivity, date), sum(steps,na.rm=TRUE))
 names(totalStepsByDayCompleteActivity) <-c("date","totals")
 
-par(mfrow = c(1,2))
-hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
-rug(totalStepsByDay$total)
-hist(totalStepsByDayCompleteActivity$totals, col="rosybrown", main="Total Steps per Day using Imputed Missing Values", breaks=5)
-rug(totalStepsByDayCompleteActivity$totals) # rug shows each data point in your data set
-```
-
-![](PA1_template_files/figure-html/imputeMissingValues-1.png) 
-
-```r
 options(digits=8)
 summary(totalStepsByDayCompleteActivity$totals)
 ```
@@ -310,6 +303,17 @@ mean(totalStepsByDay$total)
 ## [1] 9354.2295
 ```
 
+
+```r
+par(mfrow = c(2,1))
+hist(totalStepsByDay$total, col="aquamarine", main="Histogram - Total Steps per Day", breaks=5)
+rug(totalStepsByDay$total)
+hist(totalStepsByDayCompleteActivity$totals, col="rosybrown", main="Histogram -Total Steps per Day using Imputed Missing Values", breaks=5)
+rug(totalStepsByDayCompleteActivity$totals) # rug shows each data point in your data set
+```
+
+![](figure/plot3-1.png) 
+
 ## Are there differences in activity patterns between weekdays and weekends?
 We need a custom function makeDayTypeFactor that takes a vector of dates and returns a vector of factor variables with the levels weekday and weekend, using the weekdays() function.  This can be used to create a new dayType variable in the completeActivity dataset that has imputed missing values.
 With the new factor variables, we use dplyr group_by and summarize to compute mean number of steps taken, by interval and day type and save in the new R object meansByIntervalByDayTypeCompleteActivity.
@@ -334,13 +338,15 @@ completeActivity$dayType <- makeDayTypeFactor(completeActivity$date)
 meansByIntervalByDayTypeCompleteActivity <- summarize(group_by(completeActivity, interval, dayType), mean(steps))
 
 names(meansByIntervalByDayTypeCompleteActivity) <-c("interval","dayType", "means")
+```
 
+
+```r
 library(lattice)
 xyplot(means ~ interval | dayType, type="l", data=meansByIntervalByDayTypeCompleteActivity, layout = c(1,2))
 ```
 
-![](PA1_template_files/figure-html/patternsByDayType-1.png) 
-
+![](figure/plot4-1.png) 
 
 ## Results
 ### What is mean total number of steps taken per day?
