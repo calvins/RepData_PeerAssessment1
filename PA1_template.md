@@ -4,10 +4,10 @@
 ## A Taste of the Quantified Self - Insights into an Individual's Personal Activity Data Over Two Months
 
 ## Synopsis
-This report will describe some findings uncovered in the activity tracking data of an anonymous individual in 2012.  It is expected that patterns in the number of steps taken daily should match those of an individual's everyday activities like, rest, travel, work, exercise, or leisure.  The data will be summarized by day and by weekday or weekend.  Totals and averages will be calculated in several groupings such as daily, by 5-minute interval in a day, and by day type; weekday or weekend.  Histograms, five number summaries, time series plots, and multiple panel plots will help us drill down to the patterns' details.  We found that the distribution of the total number of steps taken per day looks Gaussian, or Normally distributed and is confirmed after we impute missing values in the dataset and replot the data.  The greatest average number of steps taken occurred around 8:35am, suggesting an individual's commute to a typical work location or exercise routine.  Other patterns in the time series plot suggests a decrease in the average number of steps taken during standard business hours, and no steps taken during typical rest periods (before 5am and after 10pm).  Lastly, the patterns in the time series plot of average steps taken per 5-minute interval show more activity during weekends suggesting the individual is enjoying their leisure time outside and is not at work, sitting at a desk.
+This report will describe some findings uncovered in the activity tracking data of an anonymous individual in 2012.  It is expected that patterns in the number of steps taken daily should match those of an individual's everyday activities like, rest, travel, work, exercise, or leisure.  The data will be summarized by day and by weekday or weekend.  Totals and averages will be calculated in several groupings such as daily, by 5-minute interval in a day, and by day type; weekday or weekend.  Histograms, five number summaries, time series plots, and multiple panel plots will help us drill down to the patterns' details.  We found that the distribution of the total number of steps taken per day looks Gaussian, or Normally distributed with missing values (mean of 9,354, median of 10,395) and after imputing missing values (mean and median of 10,766).  The greatest average number of steps taken (206 steps) occurred around 8:35am, suggesting an individual's commute to a typical work location or exercise routine.  Other patterns in the time series plot suggests a decrease in the average number of steps taken during standard business hours (9am to 5pm), and no steps taken during typical rest periods (before 5am and after 10pm).  Lastly, the patterns in the time series plot of average steps taken per 5-minute interval show more activity during weekends suggesting the individual is enjoying their leisure time outside and is not at work, sitting at a desk.
 
 ## Data Processing
-The dataset is a CSV file that is compressed to a zip file stored in the working directory.  It contains data submitted by an anonymous invidual recording the number of steps taken using an activity monitoring device like Fitbit.  We'll load the data with read.csv() and use unz() to access the zip file without uncompressing it.  To make grouping and summarizing easier, we'll configure dplyr.
+The data set is a CSV file that is compressed to a zip file stored in the working directory.  It contains data submitted by an anonymous individual recording the number of steps taken using an activity monitoring device like Fitbit.  We'll load the data with read.csv() and use unz() to access the zip file without uncompressing it.  To make grouping and summarizing easier, we'll configure dplyr.
 
 ```r
 mydf <- read.csv(unz("activity.zip","activity.csv"),header=TRUE,sep=",")
@@ -88,11 +88,10 @@ unique(activity$interval)
 ```
 
 ## What is mean total number of steps taken per day?
-The dplyr group_by and summarize functions makes it easy to compute the total number of steps taken per day, when we combine them with the sum() function and ignore missing values withthe na.rm=TRUE argument.
-The results are saved to a new R object totalStepsByDay and names() is helpful in making the variable names more descriptive.
-A histogram of the total steps will show the data density; how common or rare values are.  A rug in the histogram helps show all the data points under the histogram and provides some fine detail. 
-Finally, we calculate and report the mean and median of the total number of steps taken per day using the R function summary().
-We'll add a magenta vertical line to the histogram to denote the mean and a black vertical line to denote the median.  The mean total number of steps taken is 9,354.23 and the median is 10,395.00.
+The dplyr group_by and summarize functions makes it easy to compute the total number of steps taken per day, when we combine them with the sum() function and ignore missing values with the na.rm=TRUE argument.
+The results are saved to a new R object totalStepsByDay and names() is helpful in making the variable names more descriptive.  We calculate and report the mean and median of the total number of steps taken per day using the R function summary().
+
+A histogram of the total steps will show the data density; how common or rare values are.  A rug in the histogram helps show all the data points under the histogram and provides some fine detail.  We'll add a magenta vertical line to the histogram to denote the mean and a black vertical line to denote the median.  The mean total number of steps taken is 9,354.23 and the median is 10,395.00.
 
 ```r
 totalStepsByDay <- summarize(group_by(activity, date), sum(steps,na.rm=TRUE))
@@ -117,10 +116,11 @@ abline(v = median(totalStepsByDay$total), col = "black", lwd = 4)
 ![](figure/plot1-1.png) 
 
 ## What is the average daily activity pattern?
-Using dplyr summarize and group_by, we compute the means of steps for each 5-minute interval and ignore missing values.
-We'll plot the mean steps taken by 5-minute interval across all days.  We'll set the digits option to 10 to increase the number of significant digits, when viewing the summary and subset output.
-The R summary function tells us the maximum mean number of steps is 206.1698, which we can plug in to the subset function and find the 5-minute interval with this value.
-The interval 835 contains the maximum mean number of steps of 206.1698.
+Using dplyr summarize and group_by, we compute the means of steps for each 5-minute interval and ignore missing values.  We'll set the digits option to 10 to increase the number of significant digits, when viewing the summary and subset output.
+
+The R summary function tells us the maximum mean number of steps is 206.1698, which we can plug in to the subset function and find the 5-minute interval with this value.  The interval 835 contains the maximum mean number of steps of 206.1698.
+
+We'll plot the mean steps taken by 5-minute interval across all days.
 
 ```r
 meansByInterval <- summarize(group_by(activity,interval),mean(steps,na.rm=TRUE))
@@ -156,22 +156,22 @@ with(meansByInterval,plot(interval,means,type="l", main="Average number of steps
 ## Imputing missing values
 Values are only missing in the steps variable and the logical vector, missingSteps helps identify the days when used with the unique() function.  The 8 days with missing values are 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 2012-11-14 2012-11-30.
 
-The function nrow returns 2,304 or the total number of missing values in the dataset when we subset using the missingSteps logical vector.
+The function nrow returns 2,304 total missing values in the data set, when we subset using the missingSteps logical vector.
 
-Since we already have the means by interval for the entire dataset in the meansByInterval R object, my strategy is to set the missing value for each interval to the mean for each interval for each of the eight days.
+Since we already have the means by interval for the entire data set when we plotted the average daily activity pattern, our strategy is to set the missing value for each interval to the mean for each interval for each of the eight days.
 
-First, we'll create a new dataset called completeActivity by subsetting activity and selecting rows with dates NOT EQUAL to 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 2012-11-14 2012-11-30.  This gives us the rows with recorded values for steps.
+First, we'll create a new data set called completeActivity by subsetting activity and selecting rows with dates NOT EQUAL to 2012-10-01 2012-10-08 2012-11-01 2012-11-04 2012-11-09 2012-11-10 2012-11-14 2012-11-30.  This gives us the rows with recorded values for steps.
 
 Then, we create temporary R objects, (add1, add2, add3, add4, add5, add6, add7, and add8) for each day with missing values and apply our strategy and set the missing values for each interval to the mean for each interval in the R object meansByInterval.
 
-We merge each day with imputed values into the new dataset completeActivity and check for missing values in the new dataset and find none.
+We merge each day with imputed values into the new data set completeActivity and check for missing values in the new data set and find none.
 We do some housekeeping by clearing the temporary R objects, add1 to add8.
 
-To create our dataset for the plot, we use dplyr group_by and summarize to compute total number of steps taken per day using the completeActivity dataset that contains imputed missing values and save in a new R object, totalStepsByDayCompleteActivity and make the variables more descriptive.
+To create our data set for the plot, we use dplyr group_by and summarize to compute total number of steps taken per day using the completeActivity data set that contains imputed missing values and save in a new R object, totalStepsByDayCompleteActivity and make the variable names more descriptive.
 
-We calculate and report the mean and median total number of steps taken per day using the the dataset with imputed missing values and compare to the summary from the original dataset.
+We calculate and report the mean and median total number of steps taken per day using the the data set with imputed missing values and compare to the summary from the original data set.
 
-We make a histogram of the total number of steps taken each day using the dataset with imputed missing values and compare to the histogram we did earlier.  It is easier to compare the plots, when one is placed on top of the other.  In the new histogram, the mean and median are the same, so we distinguish the mean by making it a wide magenta dotted line.
+We make a histogram of the total number of steps taken each day using the data set with imputed missing values and compare to the histogram we did earlier.  It is easier to compare the plots, when one is placed on top of the other.  In the new histogram, the mean and median are the same, so we distinguish the mean by making it a wide magenta dotted line.
 
 
 ```r
@@ -287,7 +287,7 @@ abline(v = median(totalStepsByDayCompleteActivity$totals), col = "black", lwd = 
 ![](figure/plot3-1.png) 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-We need a custom function makeDayTypeFactor that takes a vector of dates and returns a vector of factor variables with levels weekday and weekend, using the weekdays() function.  This can be used to create a new dayType variable in the completeActivity dataset that has imputed missing values.
+We need a custom function makeDayTypeFactor that takes a vector of dates and returns a vector of factor variables with levels weekday and weekend, using the weekdays() function.  This can be used to create a new dayType variable in the completeActivity data set that has imputed missing values.
 
 With the new factor variable, we use dplyr group_by and summarize to compute mean number of steps taken, by interval and day type and save in the new R object meansByIntervalByDayTypeCompleteActivity and make the variable names more descriptive.
 
@@ -323,28 +323,22 @@ xyplot(means ~ interval | dayType, type="l", data=meansByIntervalByDayTypeComple
 
 ## Results
 ### What is mean total number of steps taken per day?
-The mean total number of steps taken per day is 9,354.23 with a median of 10,395.00.  The 1st Quartile is 6,778, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 10,000 to 15,000.  There are more data values in the range 0 to 10,000, than in the range 15,000 to 25,000.
+The mean total number of steps taken per day is 9,354.23 with a median of 10,395.00.  The 1st Quartile is 6,778, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 9,000 to 15,000.  There are more data values in the range 0 to 10,000, than in the range 15,000 to 25,000.
 
 ### What is the average daily activity pattern?
 The largest mean number of steps taken within a day's 5-minute interval is 206.1698 in the 835 interval or at 8:35 am.  From intervals 0 to 500, the average number of steps is usually 0.  From time intervals 500 to about 900, the average number of steps increase from 0 to about 200.  There seems to be a pattern for the average number of steps for the intervals 1000 to 2000.  The average moves from around 50 to 100 and back to 50, during the ranges, 1000 to 1500, 1500 to 1750, and 1750 to 2000.  From intervals 2000 to 2355, the average moves gradually from 50 to 0.
 
-### Do these values differ from the estimates from the first part of the assignment?
-This table compares the summaries of the original dataset and the dataset with imputed missing values.
-ORIGINAL
-     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-     0.00  6778.00 10395.00  9354.23 12811.00 21194.00
-AFTER IMPUTING MISSING VALUES
-     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    41.00  9819.00 10766.19 10766.19 12811.00 21194.00
-
-In the original dataset, the mean total number of steps taken per day is 9,354.23 with a median of 10,395.00.  The 1st Quartile is 6,778, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 10,000 to 15,000.  There are more data values in the range 0 to 10,000, than in the range 15,000 to 25,000.
+### Imputing missing values - Do these values differ from the estimates from the first part of the assignment?
+Yes, in the original data set, the mean total number of steps taken per day is 9,354.23 with a median of 10,395.00.  The 1st Quartile is 6,778, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 9,000 to 15,000.  There are more data values in the range 0 to 10,000, than in the range 15,000 to 25,000.
 
 After imputing missing values, the mean and median total number of steps taken per day is 10,766.19.  The 1st Quartile is 9,819, 3rd Quartile is 12,811, and a maximum of 21,194.  The histogram shows total steps concentrated in the range 7,500 to 15,000.  There are less data values in the ranges 0 to 5,000, and the range 20,000 to 25,000.
 
-### What is the impact of imputing missing data on the estimates of the total daily number of steps?
-After imputing missing values, and repeating the same analysis of the total number of steps per day, the new dataset distribution looks more Gaussian or normal.  When we compare the two histograms, the new plot contains more data about the mean.  As a matter of fact, the mean and median are the same after imputing missing data.
+### Imputing missing values - What is the impact of imputing missing data on the estimates of the total daily number of steps?
+After imputing missing values, and repeating the same analysis of the total number of steps per day, the new data set distribution looks more Gaussian or normal.  When we compare the two histograms, the new plot contains more data about the mean.  As a matter of fact, the mean and median are the same after imputing missing data.
 
 ### Are there differences in activity patterns between weekdays and weekends?
-Yes, on weekends, the average steps taken per day goes to 50 later in the day than on the weekdays; about 750 compared to about 550.
-Also, the pattern of the average in the intervals 1000 to 2000 is different on weekends.  The average moved to a high of about 150 on weekends, compared to 100 on weekdays.  There was also a couple of patterns visible during the weekends where the average moved from 50 to 100 and back to 50; the average also moved from 50 to 150 and back to 50.
-During weekends and weekdays, the average steps moved from 50 to 0 in the intervals 2000 to 2300.
+Yes, on weekends, the average steps taken per day goes to 50 later in the day than on the weekdays; about 750 compared to about 550 suggesting that the individual got out of bed later because there is no work.
+
+Also, the pattern of the average in the intervals 1000 to 2000 is different on weekends.  The average moved to a high of about 150 on weekends, compared to 100 on weekdays.  There were also a couple of patterns visible during the weekends where the average moved from 50 to 100 and back to 50; the average also moved from 50 to 150 and back to 50.  These higher average steps taken daily suggest the individual is enjoying leisure activities, instead of sitting behind a desk doing work.
+
+During weekends and weekdays, there was a similar pattern where the average steps moved from 50 to 0 in the intervals 2000 to 2300 suggesting the individual is resting after an eventful day!
